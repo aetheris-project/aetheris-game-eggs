@@ -1,0 +1,159 @@
+{
+  "_comment": "Aetheris Rust egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/rust/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Rust (SteamCMD)",
+  "author": "aetheris-project",
+  "description": "Rust dedicated server via SteamCMD with seed, world size, wipe schedule, oxide support and RCON.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/rust:latest": "SteamCMD - Rust"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh -batchmode +server.port ${SERVER_PORT} +server.queryport ${QUERY_PORT} +server.hostname \"${SERVER_NAME}\" +server.seed ${WORLD_SEED} +server.worldsize ${WORLD_SIZE} +server.maxplayers ${MAX_PLAYERS} +server.description \"${SERVER_DESCRIPTION}\" +server.url ${SERVER_URL} +rcon.port ${RCON_PORT} +rcon.password \"${RCON_PASSWORD}\" +rcon.web 1 +server.saveinterval ${SAVE_INTERVAL} +server.tickrate ${TICKRATE} +server.identity \"${SERVER_IDENTITY}\"",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "server startup complete",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Rust install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 258550 validate +quit\n\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 258550 validate +quit\nexec ./RustDedicated \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Name",
+      "description": "Display name of the server.",
+      "env_variable": "SERVER_NAME",
+      "default_value": "Aetheris Rust",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "28015",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Query Port",
+      "description": "Query port.",
+      "env_variable": "QUERY_PORT",
+      "default_value": "28016",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "RCON Port",
+      "description": "RCON port.",
+      "env_variable": "RCON_PORT",
+      "default_value": "28017",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "World Seed",
+      "description": "Seed used to generate the world.",
+      "env_variable": "WORLD_SEED",
+      "default_value": "1337",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:2147483647"
+    },
+    {
+      "name": "World Size",
+      "description": "World size in meters (3000-6000).",
+      "env_variable": "WORLD_SIZE",
+      "default_value": "4000",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:3000|max:6000"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "100",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Tickrate",
+      "description": "Server tickrate (30-100).",
+      "env_variable": "TICKRATE",
+      "default_value": "30",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:30|max:100"
+    },
+    {
+      "name": "Save Interval",
+      "description": "World save interval in seconds.",
+      "env_variable": "SAVE_INTERVAL",
+      "default_value": "600",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:60|max:86400"
+    },
+    {
+      "name": "Server Identity",
+      "description": "Identity folder name for the world.",
+      "env_variable": "SERVER_IDENTITY",
+      "default_value": "aetheris",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Server Description",
+      "description": "Description shown in the server browser.",
+      "env_variable": "SERVER_DESCRIPTION",
+      "default_value": "Aetheris managed Rust server",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:255"
+    },
+    {
+      "name": "Server URL",
+      "description": "Website URL shown in the server browser.",
+      "env_variable": "SERVER_URL",
+      "default_value": "https://aetheris.enterprise",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:128"
+    },
+    {
+      "name": "RCON Password",
+      "description": "RCON admin password.",
+      "env_variable": "RCON_PASSWORD",
+      "default_value": "aetheris-rcon",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

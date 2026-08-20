@@ -1,0 +1,114 @@
+{
+  "_comment": "Aetheris ARK: Survival Ascended egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/ark-asa/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "ARK: Survival Ascended",
+  "author": "aetheris-project",
+  "description": "ARK: Survival Ascended dedicated server via SteamCMD with map selection, session name, cluster support and RCON.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/ark-asa:latest": "SteamCMD - ARK ASA"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh \"${MAP_NAME}?listen?SessionName=${SESSION_NAME}?Port=${SERVER_PORT}?QueryPort=${QUERY_PORT}?RCONEnabled=True?RCONPort=${RCON_PORT}?ServerPassword=${SERVER_PASSWORD}?ServerAdminPassword=${ADMIN_PASSWORD}?MaxPlayers=${MAX_PLAYERS}?PreventDuplicateItems=True\"",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Server is now live",
+      "userInteraction": []
+    },
+    "stop": "cheat saveworld\nexit",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description ARK: Survival Ascended install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 2430930 validate +quit\n\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 2430930 validate +quit\nexec ./ShooterGame/Binaries/Linux/ArkAscendedServer \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Map Name",
+      "description": "Map to run (e.g. TheIsland_WP, ScorchedEarth_WP, Aberration_WP).",
+      "env_variable": "MAP_NAME",
+      "default_value": "TheIsland_WP",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Session Name",
+      "description": "Name shown in the server list.",
+      "env_variable": "SESSION_NAME",
+      "default_value": "Aetheris ASA",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "7777",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Query Port",
+      "description": "Query port (usually game port + 1).",
+      "env_variable": "QUERY_PORT",
+      "default_value": "7778",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "RCON Port",
+      "description": "RCON port.",
+      "env_variable": "RCON_PORT",
+      "default_value": "27020",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "70",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:100"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (empty for none).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:32"
+    },
+    {
+      "name": "Admin Password",
+      "description": "Server admin password (RCON).",
+      "env_variable": "ADMIN_PASSWORD",
+      "default_value": "aetheris-admin",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

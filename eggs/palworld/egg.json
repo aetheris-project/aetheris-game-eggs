@@ -1,0 +1,96 @@
+{
+  "_comment": "Aetheris Palworld egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/palworld/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Palworld",
+  "author": "aetheris-project",
+  "description": "Palworld dedicated server via SteamCMD with community server support, configurable world options and RCON.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/palworld:latest": "SteamCMD - Palworld"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh -port=${SERVER_PORT} -publiclobby=${PUBLIC_LOBBY} -players=${MAX_PLAYERS} -servername=\"${SERVER_NAME}\" -serverpassword=\"${SERVER_PASSWORD}\" -adminpassword=\"${ADMIN_PASSWORD}\" -useperfthreads -NoAsyncLoadingThread -UseMultithreadForDS",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Server Initialization Complete",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Palworld install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 2394010 validate +quit\n\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 2394010 validate +quit\nexec ./PalServer.sh \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Name",
+      "description": "Display name of the server.",
+      "env_variable": "SERVER_NAME",
+      "default_value": "Aetheris Palworld",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "8211",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "32",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:64"
+    },
+    {
+      "name": "Public Lobby",
+      "description": "1 = visible in the community server list.",
+      "env_variable": "PUBLIC_LOBBY",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:1"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (empty for none).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:32"
+    },
+    {
+      "name": "Admin Password",
+      "description": "RCON/admin password.",
+      "env_variable": "ADMIN_PASSWORD",
+      "default_value": "aetheris-admin",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

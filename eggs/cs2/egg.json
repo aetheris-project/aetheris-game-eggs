@@ -1,0 +1,141 @@
+{
+  "_comment": "Aetheris Counter-Strike 2 egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/cs2/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Counter-Strike 2",
+  "author": "aetheris-project",
+  "description": "Counter-Strike 2 dedicated server via SteamCMD with game mode selection, workshop maps and competitive settings presets.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/cs2:latest": "SteamCMD - CS2"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh -dedicated -port ${SERVER_PORT} -game csgo -console -usercon +game_type ${GAME_TYPE} +game_mode ${GAME_MODE} +mapgroup mg_${MAP_GROUP} +map ${DEFAULT_MAP} +maxplayers ${MAX_PLAYERS} +sv_password \"${SERVER_PASSWORD}\" +rcon_password \"${RCON_PASSWORD}\" +hostname \"${HOSTNAME}\" -tickrate ${TICKRATE}",
+  "config": {
+    "files": {
+      "csgo/cfg/server.cfg": {
+        "parser": "properties",
+        "find": {
+          "hostname": "{{server.build.env.HOSTNAME}}",
+          "sv_password": "{{server.build.env.SERVER_PASSWORD}}",
+          "rcon_password": "{{server.build.env.RCON_PASSWORD}}"
+        }
+      }
+    },
+    "startup": {
+      "done": "Connected to Steam servers",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": true,
+      "location": "logs/console.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Counter-Strike 2 install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 740 validate +quit\n\nmkdir -p csgo/cfg\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 740 validate +quit\nexec ./game/bin/linuxsteamrt64/cs2 \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris CS2",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "27015",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Game Type",
+      "description": "0 = classic, 1 = casual, 2 = competitive, 4 = coop.",
+      "env_variable": "GAME_TYPE",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:4"
+    },
+    {
+      "name": "Game Mode",
+      "description": "Game mode matching game type (0 = default).",
+      "env_variable": "GAME_MODE",
+      "default_value": "1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:5"
+    },
+    {
+      "name": "Map Group",
+      "description": "Map pool (e.g. active, casual, deathmatch).",
+      "env_variable": "MAP_GROUP",
+      "default_value": "active",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Default Map",
+      "description": "Map loaded on start (e.g. de_mirage).",
+      "env_variable": "DEFAULT_MAP",
+      "default_value": "de_mirage",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "10",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:64"
+    },
+    {
+      "name": "Tickrate",
+      "description": "Server tickrate (64 or 128).",
+      "env_variable": "TICKRATE",
+      "default_value": "128",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|in:64,128"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (empty for none).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:32"
+    },
+    {
+      "name": "RCON Password",
+      "description": "RCON admin password.",
+      "env_variable": "RCON_PASSWORD",
+      "default_value": "aetheris-rcon",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

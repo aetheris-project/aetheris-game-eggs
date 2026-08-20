@@ -1,0 +1,96 @@
+{
+  "_comment": "Aetheris Terraria egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/terraria/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Terraria (tModLoader)",
+  "author": "aetheris-project",
+  "description": "Terraria dedicated server with optional tModLoader support, world auto-creation and configurable difficulty.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/terraria:latest": "Mono + .NET - Terraria"
+  },
+  "file_denylist": [],
+  "startup": "./start.sh -port ${SERVER_PORT} -maxplayers ${MAX_PLAYERS} -world ${WORLD_PATH} -autocreate ${WORLD_SIZE}",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Listening on port",
+      "userInteraction": []
+    },
+    "stop": "exit",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Terraria install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl unzip jq\n\n# Resolve latest stable Terraria server\nTERRARIA_URL=$(curl -s https://terraria.org/api/get/dedicated-servers-native | jq -r '.[0].url')\nif [ -z \"${TERRARIA_URL}\" ]; then\n  echo \"Could not resolve the Terraria server URL.\" >&2\n  exit 1\nfi\ncurl -s -o terraria.zip \"${TERRARIA_URL}\"\nunzip -o terraria.zip -d .\nrm -f terraria.zip\n\ncat > start.sh <<'EOF'\n#!/bin/bash\n# tModLoader 64-bit Linux server launcher\ncd /home/container\nif [ -f tModLoaderServer ]; then\n  chmod +x tModLoaderServer\n  exec ./tModLoaderServer \"$@\"\nelse\n  chmod +x TerrariaServer.bin.x86_64\n  exec ./TerrariaServer.bin.x86_64 \"$@\"\nfi\nEOF\nchmod +x start.sh\n\nmkdir -p worlds logs\ncat > serverconfig.txt <<EOF\nport=${SERVER_PORT:-7777}\nmaxplayers=${MAX_PLAYERS:-16}\nworldpath=./worlds\nworldname=${WORLD_NAME:-Aetheris}\nautocreate=${WORLD_SIZE:-3}\ndifficulty=${DIFFICULTY:-0}\nEOF",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "World Path",
+      "description": "Path to the world file inside the container.",
+      "env_variable": "WORLD_PATH",
+      "default_value": "./worlds/Aetheris.wld",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:128"
+    },
+    {
+      "name": "Server Port",
+      "description": "Port the server listens on.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "7777",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:255"
+    },
+    {
+      "name": "World Name",
+      "description": "Name of the world file (without extension).",
+      "env_variable": "WORLD_NAME",
+      "default_value": "Aetheris",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "World Size",
+      "description": "1 = small, 2 = medium, 3 = large.",
+      "env_variable": "WORLD_SIZE",
+      "default_value": "3",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:3"
+    },
+    {
+      "name": "Difficulty",
+      "description": "0 = classic, 1 = expert, 2 = master, 3 = journey.",
+      "env_variable": "DIFFICULTY",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:3"
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "_comment": "Aetheris Garry's Mod egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/gmod/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Garry's Mod",
+  "author": "aetheris-project",
+  "description": "Garry's Mod dedicated server via SteamCMD with gamemode, workshop collection, svn and mount configuration.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/gmod:latest": "SteamCMD - Garry's Mod"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh +sv_clockcorrection_msecs ${CLOCK_CORRECTION} +host_workshop_collection ${WORKSHOP_COLLECTION} +sv_allow_wait_command 1 -strictportbind -port ${SERVER_PORT} +clientport ${CLIENT_PORT} +game ${GAME_TYPE} +map ${DEFAULT_MAP} +maxplayers ${MAX_PLAYERS} +hostname \"${HOSTNAME}\" +sv_password \"${SERVER_PASSWORD}\" +rcon_password \"${RCON_PASSWORD}\" +exec ${SERVER_CFG}",
+  "config": {
+    "files": {
+      "garrysmod/cfg/server.cfg": {
+        "parser": "properties",
+        "find": {
+          "hostname": "{{server.build.env.HOSTNAME}}",
+          "sv_password": "{{server.build.env.SERVER_PASSWORD}}",
+          "rcon_password": "{{server.build.env.RCON_PASSWORD}}"
+        }
+      }
+    },
+    "startup": {
+      "done": "Host_Init",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": true,
+      "location": "logs/console.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Garry's Mod install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 4020 validate +quit\n\nmkdir -p garrysmod/cfg\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 4020 validate +quit\nexec ./srcds_run -game garrysmod \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris GMod",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "27015",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Client Port",
+      "description": "Client port (usually game port + 5).",
+      "env_variable": "CLIENT_PORT",
+      "default_value": "27005",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Game Type",
+      "description": "Game mode: sandbox, terrortown, prop_hunt, deathrun.",
+      "env_variable": "GAME_TYPE",
+      "default_value": "sandbox",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Default Map",
+      "description": "Map loaded on start.",
+      "env_variable": "DEFAULT_MAP",
+      "default_value": "gm_flatgrass",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "32",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:128"
+    },
+    {
+      "name": "Workshop Collection",
+      "description": "Steam workshop collection ID (0 = none).",
+      "env_variable": "WORKSHOP_COLLECTION",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0"
+    },
+    {
+      "name": "Clock Correction",
+      "description": "Server clock correction in milliseconds.",
+      "env_variable": "CLOCK_CORRECTION",
+      "default_value": "15",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:100"
+    },
+    {
+      "name": "Server CFG",
+      "description": "Config file executed on start.",
+      "env_variable": "SERVER_CFG",
+      "default_value": "server.cfg",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (empty for none).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:32"
+    },
+    {
+      "name": "RCON Password",
+      "description": "RCON admin password.",
+      "env_variable": "RCON_PASSWORD",
+      "default_value": "aetheris-rcon",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

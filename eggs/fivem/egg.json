@@ -1,0 +1,105 @@
+{
+  "_comment": "Aetheris FiveM egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/fivem/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "FiveM (FXServer)",
+  "author": "aetheris-project",
+  "description": "FiveM FXServer with automatic artifact resolution, license key, server profile and resource hosting.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/fivem:latest": "Ubuntu 24.04 - FiveM FXServer"
+  },
+  "file_denylist": [],
+  "startup": "cd /home/container && ./alpine/opt/cfx-server/ld-musl-x86_64.so.1 --library-path ./alpine/usr/lib/v8/ ./alpine/opt/cfx-server/FXServer +set citizen_dir ./alpine/opt/cfx-server/citizen/ +set sv_licenseKey ${FIVEM_LICENSE} +set steam_webApiKey ${STEAM_WEB_API_KEY} +set sv_hostname \"${SERVER_NAME}\" +set sv_maxPlayers ${MAX_PLAYERS} +set sv_port ${SERVER_PORT} +set serverProfile default +exec server.cfg",
+  "config": {
+    "files": {
+      "server.cfg": {
+        "parser": "properties",
+        "find": {
+          "sv_hostname": "{{server.build.env.SERVER_NAME}}",
+          "sv_maxplayers": "{{server.build.env.MAX_PLAYERS}}",
+          "sv_port": "{{server.build.env.SERVER_PORT}}"
+        }
+      }
+    },
+    "startup": {
+      "done": "The FXServer process is running",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description FiveM install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl unzip jq\n\nmkdir -p /home/container/logs\ncd /home/container\n\nARTIFACT_URL=$(curl -s https://changelogs-ci.fivem.net/runtime/${FIVEM_ARTIFACT:-latest}/linux_x64 | jq -r .url)\nif [ -z \"${ARTIFACT_URL}\" ]; then\n  echo \"Could not resolve the FiveM artifact URL.\" >&2\n  exit 1\nfi\ncurl -s -o fivem.tar.gz \"${ARTIFACT_URL}\"\ntar -xzf fivem.tar.gz\nrm -f fivem.tar.gz\n\ncat > server.cfg <<EOF\nendpoint_add_tcp \"0.0.0.0:${SERVER_PORT:-30120}\"\nendpoint_add_udp \"0.0.0.0:${SERVER_PORT:-30120}\"\nsv_hostname \"${SERVER_NAME:-Aetheris FiveM}\"\nsv_maxplayers ${MAX_PLAYERS:-48}\nsv_licenseKey \"${FIVEM_LICENSE:-changeme}\"\nsv_port ${SERVER_PORT:-30120}\nEOF",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "FiveM License",
+      "description": "Your FiveM license key (required).",
+      "env_variable": "FIVEM_LICENSE",
+      "default_value": "changeme",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Name",
+      "description": "Server name shown in the FiveM list.",
+      "env_variable": "SERVER_NAME",
+      "default_value": "Aetheris FiveM",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "30120",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "48",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:128"
+    },
+    {
+      "name": "Steam Web API Key",
+      "description": "Steam web API key for server listing (optional).",
+      "env_variable": "STEAM_WEB_API_KEY",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Artifact Version",
+      "description": "FXServer artifact version (latest or a specific build).",
+      "env_variable": "FIVEM_ARTIFACT",
+      "default_value": "latest",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:16"
+    }
+  ]
+}

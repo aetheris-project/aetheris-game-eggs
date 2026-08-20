@@ -1,0 +1,87 @@
+{
+  "_comment": "Aetheris Valheim egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/valheim/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Valheim",
+  "author": "aetheris-project",
+  "description": "Valheim dedicated server via SteamCMD with world management, public/community visibility and configurable player slots.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/valheim:latest": "SteamCMD - Valheim"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh -name \"${SERVER_NAME}\" -port ${SERVER_PORT} -world \"${WORLD_NAME}\" -password \"${SERVER_PASSWORD}\" -public ${PUBLIC_VISIBILITY} -savedir \"/home/container/.config/unity3d/IronGate/Valheim\" -logpath \"/home/container/logs\"",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Game server connected",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": true,
+      "location": "logs/valheim.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Valheim install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/.config/unity3d/IronGate/Valheim /home/container/logs\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 896660 validate +quit\n\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 896660 validate +quit\nexec ./valheim_server.x86_64 \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Name",
+      "description": "Display name of the server in the community list.",
+      "env_variable": "SERVER_NAME",
+      "default_value": "Aetheris Valheim",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "World Name",
+      "description": "Name of the world (seed and save folder).",
+      "env_variable": "WORLD_NAME",
+      "default_value": "Aetheris",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "2456",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password players must enter to join.",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "aetheris",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Public Visibility",
+      "description": "1 = show in community list, 0 = private.",
+      "env_variable": "PUBLIC_VISIBILITY",
+      "default_value": "1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:0|max:1"
+    }
+  ]
+}

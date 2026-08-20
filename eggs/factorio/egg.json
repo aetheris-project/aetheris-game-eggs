@@ -1,0 +1,123 @@
+{
+  "_comment": "Aetheris Factorio egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/factorio/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Factorio",
+  "author": "aetheris-project",
+  "description": "Factorio headless dedicated server with mod support, autosave intervals, password protection and Steam auth.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/factorio:latest": "Ubuntu 24.04 - Factorio"
+  },
+  "file_denylist": [],
+  "startup": "./factorio/bin/x64/factorio --start-server ${SAVE_NAME} --port ${SERVER_PORT} --autosave-interval ${AUTOSAVE_INTERVAL} --autosave-slots ${AUTOSAVE_SLOTS} --max-players ${MAX_PLAYERS} --game-speed ${GAME_SPEED} --server-settings server-settings.json",
+  "config": {
+    "files": {
+      "server-settings.json": {
+        "parser": "json",
+        "find": {
+          "name": "{{server.build.env.SERVER_NAME}}",
+          "max_players": "{{server.build.env.MAX_PLAYERS}}",
+          "game_password": "{{server.build.env.SERVER_PASSWORD}}"
+        }
+      }
+    },
+    "startup": {
+      "done": "Game is running",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Factorio install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl jq\n\nmkdir -p /home/container/logs\ncd /home/container\n\nLATEST=$(curl -s https://factorio.com/get-download/stable/headless/linux64 | grep -oP 'factorio_[0-9.]+_linux64\\.tar\\.xz' | head -1)\nif [ -z \"${LATEST}\" ]; then\n  echo \"Could not resolve the Factorio download.\" >&2\n  exit 1\nfi\ncurl -s -o factorio.tar.xz \"https://factorio.com/get-download/stable/headless/linux64\"\ntar -xJf factorio.tar.xz\nrm -f factorio.tar.xz\n\ncat > server-settings.json <<EOF\n{\n  \"name\": \"${SERVER_NAME:-Aetheris Factorio}\",\n  \"max_players\": ${MAX_PLAYERS:-16},\n  \"game_password\": \"${SERVER_PASSWORD:-}\",\n  \"autosave_interval\": ${AUTOSAVE_INTERVAL:-10},\n  \"autosave_slots\": ${AUTOSAVE_SLOTS:-5},\n  \"require_user_verification\": true\n}\nEOF",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Name",
+      "description": "Server name shown in the in-game list.",
+      "env_variable": "SERVER_NAME",
+      "default_value": "Aetheris Factorio",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "34197",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Save Name",
+      "description": "Name of the save file to load or create.",
+      "env_variable": "SAVE_NAME",
+      "default_value": "aetheris",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:100"
+    },
+    {
+      "name": "Autosave Interval",
+      "description": "Autosave interval in minutes.",
+      "env_variable": "AUTOSAVE_INTERVAL",
+      "default_value": "10",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:120"
+    },
+    {
+      "name": "Autosave Slots",
+      "description": "Number of autosave slots to rotate.",
+      "env_variable": "AUTOSAVE_SLOTS",
+      "default_value": "5",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:20"
+    },
+    {
+      "name": "Game Speed",
+      "description": "Game speed multiplier.",
+      "env_variable": "GAME_SPEED",
+      "default_value": "1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|numeric|min:0.1|max:10"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (empty for none).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    }
+  ]
+}

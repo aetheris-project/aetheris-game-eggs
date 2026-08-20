@@ -1,0 +1,96 @@
+{
+  "_comment": "Aetheris Project Zomboid egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/project-zomboid/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Project Zomboid",
+  "author": "aetheris-project",
+  "description": "Project Zomboid dedicated server via SteamCMD with map selection, sandbox preset, PvP toggle and admin password.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/project-zomboid:latest": "SteamCMD - Project Zomboid"
+  },
+  "file_denylist": [],
+  "startup": "./start_server.sh -cachedir=/home/container/Zomboid -port ${SERVER_PORT} -servername ${SERVER_NAME} -adminpassword ${ADMIN_PASSWORD} -steamport1 ${STEAM_PORT} -steamport2 ${STEAM_QUERY_PORT}",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "SERVER STARTED",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": true,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Project Zomboid install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl\n\nmkdir -p /home/container/steamcmd /home/container/logs /home/container/Zomboid\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 380870 validate +quit\n\ncat > start_server.sh <<EOF\n#!/bin/bash\ncd /home/container\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 380870 validate +quit\nexec ./start-server.sh \"$@\"\nEOF\nchmod +x start_server.sh",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Name",
+      "description": "Server name (also the save folder).",
+      "env_variable": "SERVER_NAME",
+      "default_value": "AetherisPZ",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "16261",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Steam Port",
+      "description": "Steam query port.",
+      "env_variable": "STEAM_PORT",
+      "default_value": "8766",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Steam Query Port",
+      "description": "Steam query port 2.",
+      "env_variable": "STEAM_QUERY_PORT",
+      "default_value": "27016",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Admin Password",
+      "description": "Admin password for the server console.",
+      "env_variable": "ADMIN_PASSWORD",
+      "default_value": "aetheris-admin",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "32",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:100"
+    }
+  ]
+}

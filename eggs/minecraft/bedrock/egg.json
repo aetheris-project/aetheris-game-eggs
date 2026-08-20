@@ -1,0 +1,105 @@
+{
+  "_comment": "Aetheris Minecraft Bedrock egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/minecraft/bedrock/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Minecraft Bedrock",
+  "author": "aetheris-project",
+  "description": "Official Minecraft Bedrock Edition dedicated server for Linux, with automatic latest-version resolution and EULA acceptance.",
+  "features": [
+    "eula",
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/minecraft-bedrock:latest": "Ubuntu 24.04 - Minecraft Bedrock"
+  },
+  "file_denylist": [],
+  "startup": "./bedrock_server",
+  "config": {
+    "files": {
+      "server.properties": {
+        "parser": "properties",
+        "find": {
+          "server-port": "{{server.build.default.port}}",
+          "motd": "Aetheris Bedrock Server"
+        }
+      }
+    },
+    "startup": {
+      "done": "Server started",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Minecraft Bedrock install script\n# @user-alpine\n\napt-get update -y\napt-get install -y curl unzip jq\n\nBEDROCK_URL=$(curl -s https://www.minecraft.net/en-us/download/server/bedrock | grep -oP 'https://[^\"]+bedrock-server-[^\"]+\\.zip' | head -1)\nif [ -z \"${BEDROCK_URL}\" ]; then\n  echo \"Could not resolve the Bedrock server download URL.\" >&2\n  exit 1\nfi\ncurl -s -o bedrock.zip \"${BEDROCK_URL}\"\nunzip -o bedrock.zip -d .\nrm -f bedrock.zip\n\nif [ \"${ACCEPT_EULA}\" == \"1\" ]; then\n  echo \"eula=true\" > eula.txt\nelse\n  echo \"eula=false\" > eula.txt\nfi\n\nif [ ! -f server.properties ]; then\n  cat > server.properties <<EOF\nserver-port=${SERVER_PORT:-19132}\nmotd=${MOTD:-Aetheris Bedrock Server}\nmax-players=${MAX_PLAYERS:-20}\ngamemode=${GAMEMODE:-survival}\ndifficulty=${DIFFICULTY:-easy}\nEOF\nfi",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Accept EULA",
+      "description": "Accept the Minecraft EULA (1 = yes).",
+      "env_variable": "ACCEPT_EULA",
+      "default_value": "1",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "20",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Port",
+      "description": "UDP port the server listens on.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "19132",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Gamemode",
+      "description": "Default gamemode: survival, creative, adventure.",
+      "env_variable": "GAMEMODE",
+      "default_value": "survival",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:survival,creative,adventure"
+    },
+    {
+      "name": "Difficulty",
+      "description": "Difficulty: peaceful, easy, normal, hard.",
+      "env_variable": "DIFFICULTY",
+      "default_value": "easy",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:peaceful,easy,normal,hard"
+    },
+    {
+      "name": "MOTD",
+      "description": "Server description shown in the server list.",
+      "env_variable": "MOTD",
+      "default_value": "Aetheris Bedrock Server",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:60"
+    }
+  ]
+}
