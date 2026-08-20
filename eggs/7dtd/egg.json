@@ -1,0 +1,105 @@
+{
+  "_comment": "Aetheris 7 Days to Die egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/7dtd/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "7 Days to Die",
+  "author": "aetheris-project",
+  "description": "7 Days to Die dedicated server: survival sandbox with horde nights, RWG worlds and full modding support.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/7dtd:latest": "7 Days to Die"
+  },
+  "file_denylist": [],
+  "startup": "./7DaysToDieServer.x86_64 -configfile=serverconfig.xml -quit -batchmode -nographics -dedicated -ServerPort=${SERVER_PORT} -ServerName=\"${HOSTNAME}\" -ServerMaxPlayerCount=${MAX_PLAYERS} -ServerPassword=\"${SERVER_PASSWORD}\" -TelnetPort=${TELNET_PORT} -TelnetPassword=\"${TELNET_PASSWORD}\"",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "GameServer.Started",
+      "userInteraction": []
+    },
+    "stop": "saveworld",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description 7 Days to Die dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 294420 -beta latest_experimental validate +quit\n# Default server configuration (minimal)\ncat > serverconfig.xml <<'EOF'\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ServerSettings>\n  <property name=\"ServerName\" value=\"Aetheris 7 Days to Die\"/>\n  <property name=\"ServerPort\" value=\"26900\"/>\n  <property name=\"ServerMaxPlayerCount\" value=\"16\"/>\n  <property name=\"ServerPassword\" value=\"\"/>\n  <property name=\"GameMode\" value=\"GameModeSurvival\"/>\n  <property name=\"GameWorld\" value=\"Navezgane\"/>\n  <property name=\"TelnetPort\" value=\"8081\"/>\n  <property name=\"TelnetPassword\" value=\"\"/>\n</ServerSettings>\nEOF\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the server browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris 7 Days to Die",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port (UDP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "26900",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Telnet Port",
+      "description": "Telnet administration port.",
+      "env_variable": "TELNET_PORT",
+      "default_value": "8081",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Telnet Password",
+      "description": "Telnet administration password.",
+      "env_variable": "TELNET_PASSWORD",
+      "default_value": "changeme",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Game World",
+      "description": "World name or RWG seed.",
+      "env_variable": "GAME_WORLD",
+      "default_value": "Navezgane",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

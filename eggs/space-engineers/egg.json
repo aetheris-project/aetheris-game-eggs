@@ -1,0 +1,78 @@
+{
+  "_comment": "Aetheris Space Engineers egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/space-engineers/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Space Engineers",
+  "author": "aetheris-project",
+  "description": "Space Engineers dedicated server: voxel-based sandbox with ship building, planets and multiplayer survival.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/space-engineers:latest": "Space Engineers"
+  },
+  "file_denylist": [],
+  "startup": "./DedicatedServer64/SpaceEngineersDedicated -port ${SERVER_PORT} -path ./data -ip 0.0.0.0 -fullScreen false",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Server started",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Space Engineers dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 298740 validate +quit\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Port",
+      "description": "Game port (UDP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "27016",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "World Name",
+      "description": "World save name.",
+      "env_variable": "WORLD_NAME",
+      "default_value": "Aetheris World",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    }
+  ]
+}

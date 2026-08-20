@@ -1,0 +1,87 @@
+{
+  "_comment": "Aetheris Velocity Proxy egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/minecraft/velocity/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Velocity Proxy",
+  "author": "aetheris-project",
+  "description": "Modern, high-performance Minecraft proxy for networks of servers with forwarding, plugins and built-in MOTD.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/minecraft-velocity:latest": "Velocity Proxy"
+  },
+  "file_denylist": [],
+  "startup": "java -Xms${MEMORY}M -Xmx${MEMORY}M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -jar velocity.jar",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Done (",
+      "userInteraction": []
+    },
+    "stop": "end",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Velocity proxy install\n# @user-alpine\n\napt-get update -y\napt-get install -y curl jq\n\ncd /home/container\n\n# Resolve the latest Velocity build.\nPROJECT=$(curl -s https://api.papermc.io/v2/projects/velocity | jq -r '.versions[-1]')\nBUILD=$(curl -s \"https://api.papermc.io/v2/projects/velocity/versions/${PROJECT}/builds\" | jq -r '.builds[-1].build')\ncurl -s -o velocity.jar \"https://api.papermc.io/v2/projects/velocity/versions/${PROJECT}/builds/${BUILD}/downloads/velocity-${PROJECT}-${BUILD}.jar\"\n\nif [ ! -f velocity.toml ]; then\n  cat > velocity.toml <<EOF\nbind = \"0.0.0.0:${SERVER_PORT:-25577}\"\nmotd = \"${MOTD:-Aetheris Network}\"\nshow-max-players = ${MAX_PLAYERS:-500}\nonline-mode = ${ONLINE_MODE:-true}\nEOF\nfi\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Memory (MB)",
+      "description": "Memory allocated to the proxy in MB.",
+      "env_variable": "MEMORY",
+      "default_value": "1024",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:256|max:65536"
+    },
+    {
+      "name": "Server Port",
+      "description": "Proxy listener port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "25577",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum concurrent players across the network.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "500",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:5000"
+    },
+    {
+      "name": "Online Mode",
+      "description": "Verify client identities with Mojang.",
+      "env_variable": "ONLINE_MODE",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "MOTD",
+      "description": "Proxy MOTD shown in the server list.",
+      "env_variable": "MOTD",
+      "default_value": "Aetheris Network",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:60"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "_comment": "Aetheris SCP: Secret Laboratory egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/scpsl/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "SCP: Secret Laboratory",
+  "author": "aetheris-project",
+  "description": "SCP: Secret Laboratory dedicated server: multiplayer horror with round-based gameplay and configurable roles.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/scpsl:latest": "SCP: Secret Laboratory"
+  },
+  "file_denylist": [],
+  "startup": "./LocalAdmin ${SERVER_PORT} -- --port ${SERVER_PORT} --config config_gameplay.txt",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Waiting for players",
+      "userInteraction": []
+    },
+    "stop": "STOP",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description SCP Secret Laboratory dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 996560 validate +quit\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Port",
+      "description": "Game port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "7777",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "24",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Tickrate",
+      "description": "Server tick rate.",
+      "env_variable": "TICKRATE",
+      "default_value": "60",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:10|max:128"
+    }
+  ]
+}

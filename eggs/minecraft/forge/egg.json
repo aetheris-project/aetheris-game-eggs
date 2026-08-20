@@ -1,0 +1,114 @@
+{
+  "_comment": "Aetheris Minecraft Forge egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/minecraft/forge/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Minecraft Forge",
+  "author": "aetheris-project",
+  "description": "Minecraft Java Edition with the Forge mod loader, automatic version resolution and memory presets.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/minecraft-forge:latest": "Minecraft Forge"
+  },
+  "file_denylist": [],
+  "startup": "java -Xms${MEMORY}M -Xmx${MEMORY}M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -jar ${SERVER_JARFILE} nogui",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Done (",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Minecraft Forge server install with version resolution\n# @user-alpine\n\napt-get update -y\napt-get install -y curl jq\n\ncd /home/container\n\n# Resolve the latest Forge version for the requested Minecraft version.\nMC=${MC_VERSION:-latest}\nFORGE_VERSION=$(curl -s \"https://meta.forgecdn.net/minecraft/versions.json\" | jq -r --arg mc \"$MC\" '.versions[] | select(.id==$mc) | .latest.release' | head -1)\nif [ -z \"$FORGE_VERSION\" ] || [ \"$FORGE_VERSION\" = \"null\" ]; then\n  echo \"Could not resolve Forge for Minecraft $MC\"\n  exit 1\nfi\nMC_FINAL=$(curl -s \"https://meta.forgecdn.net/minecraft/versions.json\" | jq -r --arg mc \"$MC\" '.versions[] | select(.id==$mc) | .id' | head -1)\n\n# Download the installer and run it headless.\ncurl -s -o forge-installer.jar \"https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_FINAL}-${FORGE_VERSION}/forge-${MC_FINAL}-${FORGE_VERSION}-installer.jar\"\njava -jar forge-installer.jar --installServer\nrm -f forge-installer.jar\n\n# Forge leaves run.sh / libraries; move the server jar to the expected name.\nif [ -f \"run.sh\" ]; then\n  mv run.sh \"${SERVER_JARFILE:-server.jar}.sh\" 2>/dev/null || true\nfi\nif [ -f \"libraries\" ] && [ -d \"libraries\" ]; then\n  echo \"Forge libraries present\" > /dev/null\nfi\n\n# EULA\necho \"eula=${ACCEPT_EULA:-true}\" > eula.txt\nif [ ! -f server.properties ]; then\n  cat > server.properties <<EOF\nmotd=${MOTD:-Aetheris Forge Server}\nmax-players=${MAX_PLAYERS:-20}\nserver-port=${SERVER_PORT:-25565}\nonline-mode=${ONLINE_MODE:-true}\nEOF\nfi\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Minecraft Version",
+      "description": "Minecraft version to install.",
+      "env_variable": "MC_VERSION",
+      "default_value": "latest",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:16"
+    },
+    {
+      "name": "Server Jarfile",
+      "description": "The jarfile to run.",
+      "env_variable": "SERVER_JARFILE",
+      "default_value": "server.jar",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Memory (MB)",
+      "description": "Memory allocated to the server in MB.",
+      "env_variable": "MEMORY",
+      "default_value": "4096",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:512|max:131072"
+    },
+    {
+      "name": "Accept EULA",
+      "description": "Accept the Minecraft EULA.",
+      "env_variable": "ACCEPT_EULA",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "20",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Port",
+      "description": "Minecraft server port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "25565",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Online Mode",
+      "description": "Verify client identities with Mojang.",
+      "env_variable": "ONLINE_MODE",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "MOTD",
+      "description": "Server description shown in the server list.",
+      "env_variable": "MOTD",
+      "default_value": "Aetheris Forge Server",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:60"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "_comment": "Aetheris Vintage Story egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/vintage-story/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Vintage Story",
+  "author": "aetheris-project",
+  "description": "Vintage Story dedicated server: deep survival sandbox with realistic crafting, seasons and mods.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/vintage-story:latest": "Vintage Story"
+  },
+  "file_denylist": [],
+  "startup": "dotnet VintagestoryServer.dll --dataPath /home/container/data --port ${SERVER_PORT} --maxPlayers ${MAX_PLAYERS} --password \"${SERVER_PASSWORD}\"",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Server started",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Vintage Story server install\n# @user-alpine\n\napt-get update -y\napt-get install -y curl unzip\n\ncd /home/container\nVERSION=${VS_VERSION:-latest}\n# Vintage Story publishes versioned linux server archives.\nif [ \"$VERSION\" = \"latest\" ]; then\n  VERSION=$(curl -s https://api.vintagestory.at/lateststable.txt | tr -d '\\r' | tr -d '\\n')\nfi\ncurl -s -o vs.zip \"https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${VERSION}.tar.gz\" || \\\n  curl -s -o vs.tar.gz \"https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${VERSION}.tar.gz\"\nif [ -f vs.zip ]; then unzip -q vs.zip; rm vs.zip; fi\nif [ -f vs.tar.gz ]; then tar -xzf vs.tar.gz; rm vs.tar.gz; fi\nchmod +x VintagestoryServer.dll 2>/dev/null || true\nmkdir -p data\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Vintage Story Version",
+      "description": "Server version to install.",
+      "env_variable": "VS_VERSION",
+      "default_value": "latest",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:16"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port (TCP/UDP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "42420",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    }
+  ]
+}

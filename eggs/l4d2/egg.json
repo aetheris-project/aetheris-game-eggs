@@ -1,0 +1,114 @@
+{
+  "_comment": "Aetheris Left 4 Dead 2 egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/l4d2/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Left 4 Dead 2",
+  "author": "aetheris-project",
+  "description": "Left 4 Dead 2 dedicated server via Source dedicated server: co-op zombie survival with campaigns and mutations.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/l4d2:latest": "Left 4 Dead 2"
+  },
+  "file_denylist": [],
+  "startup": "./srcds_run -game left4dead2 -console -port ${SERVER_PORT} +sv_password \"${SERVER_PASSWORD}\" +map ${DEFAULT_MAP} +maxplayers ${MAX_PLAYERS} +hostname \"${HOSTNAME}\" +rcon_password \"${RCON_PASSWORD}\" +sv_lan 0 -tickrate ${TICKRATE}",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Connection to Steam servers successful",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Left 4 Dead 2 dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 222860 validate +quit\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the server browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris L4D2",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port (UDP/TCP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "27015",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Query Port",
+      "description": "Source query port used by the server browser.",
+      "env_variable": "QUERY_PORT",
+      "default_value": "27015",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "8",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "RCON Password",
+      "description": "RCON password for remote administration.",
+      "env_variable": "RCON_PASSWORD",
+      "default_value": "changeme",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Tickrate",
+      "description": "Server simulation tick rate.",
+      "env_variable": "TICKRATE",
+      "default_value": "64",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:10|max:128"
+    },
+    {
+      "name": "Default Map",
+      "description": "Campaign map loaded on first start.",
+      "env_variable": "DEFAULT_MAP",
+      "default_value": "c1m1_hotel",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    }
+  ]
+}

@@ -19,6 +19,9 @@ The repository ships three layers for each game:
 | Game | Egg | Image | Default port |
 | --- | --- | --- | --- |
 | Minecraft Java | `eggs/minecraft/java` | `ghcr.io/aetheris-project/minecraft-java` | 25565 |
+| Minecraft Forge | `eggs/minecraft/forge` | `ghcr.io/aetheris-project/minecraft-forge` | 25565 |
+| Minecraft Paper | `eggs/minecraft/paper` | `ghcr.io/aetheris-project/minecraft-paper` | 25565 |
+| Minecraft Velocity | `eggs/minecraft/velocity` | `ghcr.io/aetheris-project/minecraft-velocity` | 25577 |
 | Minecraft Bedrock | `eggs/minecraft/bedrock` | `ghcr.io/aetheris-project/minecraft-bedrock` | 19132 |
 | Terraria | `eggs/terraria` | `ghcr.io/aetheris-project/terraria` | 7777 |
 | Valheim | `eggs/valheim` | `ghcr.io/aetheris-project/valheim` | 2456 |
@@ -31,6 +34,17 @@ The repository ships three layers for each game:
 | Project Zomboid | `eggs/project-zomboid` | `ghcr.io/aetheris-project/project-zomboid` | 16261 |
 | Factorio | `eggs/factorio` | `ghcr.io/aetheris-project/factorio` | 34197 |
 | Satisfactory | `eggs/satisfactory` | `ghcr.io/aetheris-project/satisfactory` | 7777 |
+| 7 Days to Die | `eggs/7dtd` | `ghcr.io/aetheris-project/7dtd` | 26900 |
+| V Rising | `eggs/vrising` | `ghcr.io/aetheris-project/vrising` | 9874 |
+| Enshrouded | `eggs/enshrouded` | `ghcr.io/aetheris-project/enshrouded` | 15636 |
+| Don't Starve Together | `eggs/dst` | `ghcr.io/aetheris-project/dst` | 10999 |
+| Vintage Story | `eggs/vintage-story` | `ghcr.io/aetheris-project/vintage-story` | 42420 |
+| SCP: Secret Laboratory | `eggs/scpsl` | `ghcr.io/aetheris-project/scpsl` | 7777 |
+| Team Fortress 2 | `eggs/tf2` | `ghcr.io/aetheris-project/tf2` | 27015 |
+| Left 4 Dead 2 | `eggs/l4d2` | `ghcr.io/aetheris-project/l4d2` | 27015 |
+| Conan Exiles | `eggs/conan-exiles` | `ghcr.io/aetheris-project/conan-exiles` | 7777 |
+| Space Engineers | `eggs/space-engineers` | `ghcr.io/aetheris-project/space-engineers` | 27016 |
+| Starbound | `eggs/starbound` | `ghcr.io/aetheris-project/starbound` | 21025 |
 
 ## Quick start
 
@@ -80,6 +94,7 @@ eggs/
 images/
   <game>/Dockerfile   # Runtime images published to ghcr.io/aetheris-project/*
 tools/
+  generate_eggs.py    # Declarative generator for SteamCMD and Minecraft eggs
   validate_eggs.py    # Schema + consistency validator (CI gate)
 docs/
   egg-authoring.md    # How to add a new egg to this catalog
@@ -100,6 +115,20 @@ The validator checks that each `egg.json`:
 - references an image that exists in `images/`;
 - declares variables with defaults, descriptions and validation rules;
 - keeps the same `id` slug across the egg, its folder and its image tag.
+
+## Generating eggs
+
+SteamCMD-based and Minecraft-family eggs are generated from a declarative
+catalog in `tools/generate_eggs.py`:
+
+```bash
+python tools/generate_eggs.py
+```
+
+The generator writes the `egg.json`, `README.md` and `images/<slug>/Dockerfile`
+for every entry and is deterministic, so the generated files stay in sync with
+the catalog. Hand-tuned eggs (for example `minecraft/java` with its Aikar's
+flags) remain checked in and are not overwritten.
 
 ## Contributing
 

@@ -1,0 +1,78 @@
+{
+  "_comment": "Aetheris Don't Starve Together egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/dst/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Don't Starve Together",
+  "author": "aetheris-project",
+  "description": "Don't Starve Together dedicated shard: wilderness survival with seasons, caves and mods.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/dst:latest": "Don't Starve Together"
+  },
+  "file_denylist": [],
+  "startup": "./dontstarve_dedicated_server_nullrenderer -console -cluster ${CLUSTER_NAME} -shard ${SHARD_NAME}",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Sim paused",
+      "userInteraction": []
+    },
+    "stop": "c_shutdown()",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Don't Starve Together dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 343946 validate +quit\n# DST requires a cluster directory layout under ~/.klei/DoNotStarveTogether\nmkdir -p /home/container/.klei/DoNotStarveTogether/${CLUSTER_NAME:-AetherisCluster}/Master\ncat > /home/container/.klei/DoNotStarveTogether/${CLUSTER_NAME:-AetherisCluster}/cluster.ini <<'EOF'\n[NETWORK]\ncluster_name = Aetheris DST\ncluster_description = Aetheris hosted server\ncluster_password =\n[GAMEPLAY]\nmax_players = 16\npvp = false\n[SHARD]\nshard_enabled = true\nshard_selection = master\nEOF\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Cluster Name",
+      "description": "Cluster directory name.",
+      "env_variable": "CLUSTER_NAME",
+      "default_value": "AetherisCluster",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Shard Name",
+      "description": "Shard to run (Master or Caves).",
+      "env_variable": "SHARD_NAME",
+      "default_value": "Master",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:32"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:64"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    }
+  ]
+}

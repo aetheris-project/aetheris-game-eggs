@@ -1,0 +1,105 @@
+{
+  "_comment": "Aetheris V Rising egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/vrising/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "V Rising",
+  "author": "aetheris-project",
+  "description": "V Rising dedicated server: open-world vampire survival with castle building, clans and PvP or PvE rulesets.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/vrising:latest": "V Rising"
+  },
+  "file_denylist": [],
+  "startup": "./VRisingServer -serverName \"${HOSTNAME}\" -serverPort ${SERVER_PORT} -gamePort ${GAME_PORT} -queryPort ${QUERY_PORT} -maxUsers ${MAX_PLAYERS} -password \"${SERVER_PASSWORD}\" -secure ${SECURE} -persistentDataPath ./save-data -logFile ./logs/VRisingServer.log",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Started MasterServer",
+      "userInteraction": []
+    },
+    "stop": "quit",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description V Rising dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 1829350 validate +quit\nmkdir -p /home/container/save-data /home/container/logs\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the server browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris V Rising",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Primary server port (UDP/TCP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "9874",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Game Port",
+      "description": "Game port (UDP).",
+      "env_variable": "GAME_PORT",
+      "default_value": "9875",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Query Port",
+      "description": "Source query port used by the server browser.",
+      "env_variable": "QUERY_PORT",
+      "default_value": "9876",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "40",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Password",
+      "description": "Password required to join (leave empty for a public server).",
+      "env_variable": "SERVER_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:64"
+    },
+    {
+      "name": "Secure Mode",
+      "description": "Require secure connections.",
+      "env_variable": "SECURE",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    }
+  ]
+}

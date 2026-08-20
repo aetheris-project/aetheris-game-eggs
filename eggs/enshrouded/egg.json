@@ -1,0 +1,78 @@
+{
+  "_comment": "Aetheris Enshrouded egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/enshrouded/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Enshrouded",
+  "author": "aetheris-project",
+  "description": "Enshrouded dedicated server: co-op survival action RPG with base building, shroud exploration and bosses.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/enshrouded:latest": "Enshrouded"
+  },
+  "file_denylist": [],
+  "startup": "./enshrouded_server \"--name=${HOSTNAME}\" \"--port=${SERVER_PORT}\" \"--query-port=${QUERY_PORT}\" \"--slot-count=${MAX_PLAYERS}\" --log-file /home/container/logs/enshrouded.log",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "enshrouded server started",
+      "userInteraction": []
+    },
+    "stop": "CTRL_C",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Enshrouded dedicated server install via SteamCMD\n# @user-alpine\n\napt-get update -y\napt-get install -y curl tar\n\nmkdir -p /home/container/steamcmd\ncd /home/container\n\ncurl -sSL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar -xz -C steamcmd\n./steamcmd/steamcmd.sh +force_install_dir /home/container +login anonymous +app_update 2278520 validate +quit\nmkdir -p /home/container/logs\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Hostname",
+      "description": "Server name shown in the server browser.",
+      "env_variable": "HOSTNAME",
+      "default_value": "Aetheris Enshrouded",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Server Port",
+      "description": "Game port (UDP).",
+      "env_variable": "SERVER_PORT",
+      "default_value": "15636",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Query Port",
+      "description": "Source query port used by the server browser.",
+      "env_variable": "QUERY_PORT",
+      "default_value": "15637",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum number of concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    }
+  ]
+}

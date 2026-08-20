@@ -1,0 +1,114 @@
+{
+  "_comment": "Aetheris Minecraft Paper egg - Pterodactyl-compatible (PTDL_v2).",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": "https://raw.githubusercontent.com/aetheris-project/aetheris-game-eggs/main/eggs/minecraft/paper/egg.json"
+  },
+  "exported_at": "2026-08-20T00:00:00+00:00",
+  "name": "Minecraft Paper",
+  "author": "aetheris-project",
+  "description": "High-performance Minecraft Java server on the Paper fork, with automatic latest-version resolution.",
+  "features": [
+    "pid_limit",
+    "fs_write"
+  ],
+  "docker_images": {
+    "ghcr.io/aetheris-project/minecraft-paper:latest": "Minecraft Paper"
+  },
+  "file_denylist": [],
+  "startup": "java -Xms${MEMORY}M -Xmx${MEMORY}M -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -jar ${SERVER_JARFILE} nogui",
+  "config": {
+    "files": {},
+    "startup": {
+      "done": "Done (",
+      "userInteraction": []
+    },
+    "stop": "stop",
+    "logs": {
+      "custom": false,
+      "location": "logs/latest.log"
+    },
+    "extends": null
+  },
+  "scripts": {
+    "installation": {
+      "script": "# @author Aetheris Project\n# @description Paper server install via the PaperMC API\n# @user-alpine\n\napt-get update -y\napt-get install -y curl jq\n\ncd /home/container\n\nVERSION=${MC_VERSION:-latest}\nif [ \"$VERSION\" = \"latest\" ]; then\n  VERSION=$(curl -s https://api.papermc.io/v2/projects/paper | jq -r '.versions[-1]')\nfi\nBUILD=$(curl -s \"https://api.papermc.io/v2/projects/paper/versions/${VERSION}/builds\" | jq -r '.builds[-1].build')\ncurl -s -o \"${SERVER_JARFILE:-server.jar}\" \"https://api.papermc.io/v2/projects/paper/versions/${VERSION}/builds/${BUILD}/downloads/paper-${VERSION}-${BUILD}.jar\"\n\n# EULA\necho \"eula=${ACCEPT_EULA:-true}\" > eula.txt\nif [ ! -f server.properties ]; then\n  cat > server.properties <<EOF\nmotd=${MOTD:-Aetheris Paper Server}\nmax-players=${MAX_PLAYERS:-20}\nserver-port=${SERVER_PORT:-25565}\nonline-mode=${ONLINE_MODE:-true}\nEOF\nfi\n",
+      "container": "ghcr.io/pterodactyl/installers:alpine",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Minecraft Version",
+      "description": "Minecraft version to install (latest or specific).",
+      "env_variable": "MC_VERSION",
+      "default_value": "latest",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:16"
+    },
+    {
+      "name": "Server Jarfile",
+      "description": "The jarfile to run.",
+      "env_variable": "SERVER_JARFILE",
+      "default_value": "server.jar",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:64"
+    },
+    {
+      "name": "Memory (MB)",
+      "description": "Memory allocated to the server in MB.",
+      "env_variable": "MEMORY",
+      "default_value": "4096",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:512|max:131072"
+    },
+    {
+      "name": "Accept EULA",
+      "description": "Accept the Minecraft EULA.",
+      "env_variable": "ACCEPT_EULA",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "Max Players",
+      "description": "Maximum concurrent players.",
+      "env_variable": "MAX_PLAYERS",
+      "default_value": "20",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:500"
+    },
+    {
+      "name": "Server Port",
+      "description": "Minecraft server port.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "25565",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|min:1|max:65535"
+    },
+    {
+      "name": "Online Mode",
+      "description": "Verify client identities with Mojang.",
+      "env_variable": "ONLINE_MODE",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|boolean"
+    },
+    {
+      "name": "MOTD",
+      "description": "Server description shown in the server list.",
+      "env_variable": "MOTD",
+      "default_value": "Aetheris Paper Server",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "string|max:60"
+    }
+  ]
+}
