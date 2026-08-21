@@ -1,143 +1,229 @@
-# Aetheris Game Eggs
+<p align="center">
+  <img src="https://raw.githubusercontent.com/aetheris-project/.github/main/assets/icon.svg" alt="Aetheris Game Eggs" width="88" style="filter: drop-shadow(0 0 20px rgba(236,72,153,0.55))">
+</p>
 
-Official game server eggs for the [Aetheris](https://github.com/aetheris-project)
-virtualization platform. Every egg is a drop-in **Pterodactyl-compatible**
-definition (schema `PTDL_v2`) and can be imported into any Pterodactyl panel,
-including the Pterodactyl bridge built into Aetheris.
+<h1 align="center">Aetheris Game Eggs</h1>
 
-The repository ships three layers for each game:
+<p align="center">
+  <strong>Official Pterodactyl-compatible egg catalog (PTDL_v2) for the Aetheris virtualization platform — 27 games, 31 images</strong>
+</p>
 
-1. **Egg definition** - the `egg.json` manifest: Docker image, startup command,
-   stop command, server configuration parsing, and install variables.
-2. **Install script** - a deterministic, idempotent installer that downloads the
-   server files, validates checksums and writes the configuration.
-3. **Configuration blueprint** - sane defaults (ports, world names, memory
-   presets) so a server starts on first boot with zero manual steps.
+<p align="center">
+  <a href="https://aetheris-docs.vercel.app/wiki/game-hosting"><img src="https://img.shields.io/badge/Docs-Game%20Hosting-0EA5E9?style=for-the-badge&logo=readthedocs&logoColor=white" alt="Docs"></a>
+  <a href="https://aetheris-docs.vercel.app/wiki/game-hosting-catalog"><img src="https://img.shields.io/badge/Catalog-27%20Games-EC4899?style=for-the-badge&logo=steam&logoColor=white" alt="Catalog"></a>
+  <a href="https://discord.gg/6GcfebuT2A"><img src="https://img.shields.io/badge/Discord-Help-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
 
-## Supported games
+<p align="center">
+  <img src="https://img.shields.io/badge/Pterodactyl-PTDL__v2-18181B?style=flat-square&logo=pterodactyl&logoColor=white" alt="Pterodactyl">
+  <img src="https://img.shields.io/badge/Docker-31%20Images-2496ED?style=flat-square&logo=docker&logoColor=white" alt="Docker">
+  <img src="https://img.shields.io/badge/Games-27-EC4899?style=flat-square" alt="Games">
+  <img src="https://img.shields.io/badge/Variants-31-F59E0B?style=flat-square" alt="Variants">
+  <img src="https://img.shields.io/badge/CI-Validated-10B981?style=flat-square&logo=githubactions&logoColor=white" alt="CI">
+  <img src="https://img.shields.io/badge/Aetheris-Bridge%20Ready-10B981?style=flat-square" alt="Bridge">
+</p>
 
-| Game | Egg | Image | Default port |
-| --- | --- | --- | --- |
-| Minecraft Java | `eggs/minecraft/java` | `ghcr.io/aetheris-project/minecraft-java` | 25565 |
-| Minecraft Forge | `eggs/minecraft/forge` | `ghcr.io/aetheris-project/minecraft-forge` | 25565 |
-| Minecraft Paper | `eggs/minecraft/paper` | `ghcr.io/aetheris-project/minecraft-paper` | 25565 |
-| Minecraft Velocity | `eggs/minecraft/velocity` | `ghcr.io/aetheris-project/minecraft-velocity` | 25577 |
-| Minecraft Bedrock | `eggs/minecraft/bedrock` | `ghcr.io/aetheris-project/minecraft-bedrock` | 19132 |
-| Terraria | `eggs/terraria` | `ghcr.io/aetheris-project/terraria` | 7777 |
-| Valheim | `eggs/valheim` | `ghcr.io/aetheris-project/valheim` | 2456 |
-| Palworld | `eggs/palworld` | `ghcr.io/aetheris-project/palworld` | 8211 |
-| ARK: Survival Ascended | `eggs/ark-asa` | `ghcr.io/aetheris-project/ark-asa` | 7777 |
-| Counter-Strike 2 | `eggs/cs2` | `ghcr.io/aetheris-project/cs2` | 27015 |
-| Rust | `eggs/rust` | `ghcr.io/aetheris-project/rust` | 28015 |
-| Garry's Mod | `eggs/gmod` | `ghcr.io/aetheris-project/gmod` | 27015 |
-| FiveM | `eggs/fivem` | `ghcr.io/aetheris-project/fivem` | 30120 |
-| Project Zomboid | `eggs/project-zomboid` | `ghcr.io/aetheris-project/project-zomboid` | 16261 |
-| Factorio | `eggs/factorio` | `ghcr.io/aetheris-project/factorio` | 34197 |
-| Satisfactory | `eggs/satisfactory` | `ghcr.io/aetheris-project/satisfactory` | 7777 |
-| 7 Days to Die | `eggs/7dtd` | `ghcr.io/aetheris-project/7dtd` | 26900 |
-| V Rising | `eggs/vrising` | `ghcr.io/aetheris-project/vrising` | 9874 |
-| Enshrouded | `eggs/enshrouded` | `ghcr.io/aetheris-project/enshrouded` | 15636 |
-| Don't Starve Together | `eggs/dst` | `ghcr.io/aetheris-project/dst` | 10999 |
-| Vintage Story | `eggs/vintage-story` | `ghcr.io/aetheris-project/vintage-story` | 42420 |
-| SCP: Secret Laboratory | `eggs/scpsl` | `ghcr.io/aetheris-project/scpsl` | 7777 |
-| Team Fortress 2 | `eggs/tf2` | `ghcr.io/aetheris-project/tf2` | 27015 |
-| Left 4 Dead 2 | `eggs/l4d2` | `ghcr.io/aetheris-project/l4d2` | 27015 |
-| Conan Exiles | `eggs/conan-exiles` | `ghcr.io/aetheris-project/conan-exiles` | 7777 |
-| Space Engineers | `eggs/space-engineers` | `ghcr.io/aetheris-project/space-engineers` | 27016 |
-| Starbound | `eggs/starbound` | `ghcr.io/aetheris-project/starbound` | 21025 |
+---
 
-## Quick start
+<br>
 
-### Import into Pterodactyl
+> **Drop-in game-server definitions compatible with Pterodactyl PTDL_v2** and
+> natively consumed by the Aetheris Pterodactyl Bridge. Every egg ships
+> three layers — the JSON manifest, a deterministic install script and a
+> set of sane-port / memory / firewall defaults so servers boot on the
+> first start with zero manual configuration.
+>
+> Images are published to **ghcr.io/aetheris-project/\*** and source
+> Dockerfiles live in `images/<slug>/` for every variant.
+
+<br>
+
+## ✨ Features
+
+<table>
+  <tr>
+    <td width="33%" align="center" valign="top">
+      <h3>🎮 27 games</h3>
+      <p>Minecraft family (5) · Survival (10) · Source/Valve (5) · Sandbox (5) · Other (2) — 31 total variants.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <h3>⚓ Pterodactyl PTDL_v2</h3>
+      <p>100% compatible with stock Pterodactyl. Import via <code>php artisan p:egg:import</code> with no conversion.</p>
+    </td>
+    <td width="33%" align="center" valign="top">
+      <h3>🐳 Deterministic images</h3>
+      <p>Per-game Dockerfiles in <code>images/</code>. Published to ghcr.io with immutable tags.</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <h3>🧱 Sane defaults</h3>
+      <p>Correct default port, allocations, memory presets, environment variables, startup flags + stop commands.</p>
+    </td>
+    <td align="center" valign="top">
+      <h3>🔁 Idempotent install</h3>
+      <p>Each install script validates checksums, resumes interrupted downloads and verifies server binaries.</p>
+    </td>
+    <td align="center" valign="top">
+      <h3>🛡️ CI validated</h3>
+      <p>Schema check · ID slug consistency · image-Dockerfile pairing · variable descriptions — all gate merges.</p>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## 🚀 Quick Start
+
+### Method A — Import into stock Pterodactyl
 
 ```bash
-# From the Pterodactyl panel directory
 cd /var/www/pterodactyl
 
-# Import a single egg
+# Import ONE egg
 php artisan p:egg:import /path/to/aetheris-game-eggs/eggs/minecraft/java/egg.json
 
-# Import every egg in the repository
-for egg in /path/to/aetheris-game-eggs/eggs/*/egg.json; do
+# Import ALL eggs (Linux shell)
+for egg in /path/to/aetheris-game-eggs/eggs/*/egg.json \
+           /path/to/aetheris-game-eggs/eggs/minecraft/*/egg.json; do
   php artisan p:egg:import "$egg"
 done
 ```
 
-### Use with the Aetheris Pterodactyl bridge
+### Method B — Use via Aetheris Pterodactyl Bridge
 
-The Aetheris backend provisions servers through its Pterodactyl driver
-(`aetheris-app/src/lib/adapters/hypervisors/pterodactyl.ts`). Point the driver
-at this repository when a client orders a game server:
+The Aetheris control plane provisions servers through its typed Pterodactyl
+driver. In `admin/nodes` → driver config point `eggCatalog` at this repo:
 
 ```json
 {
-  "provider": "pterodactyl",
-  "baseUrl": "https://panel.example.com",
-  "applicationKey": "ptlc_...",
-  "clientKey": "ptlc_...",
-  "eggCatalog": "https://github.com/aetheris-project/aetheris-game-eggs"
+  "provider":      "pterodactyl",
+  "baseUrl":       "https://panel.example.com",
+  "applicationKey":"ptla_xxxxxxxxxxxxxxxxxxxx",
+  "clientKey":     "ptlc_yyyyyyyyyyyyyyyyyyyy",
+  "eggCatalog":    "https://github.com/aetheris-project/aetheris-game-eggs"
 }
 ```
 
-The bridge resolves the egg by its `id` (the stable slug in the egg manifest),
-so `minecraft-java`, `terraria`, `valheim` and friends map directly to the
-game selection shown in the Aetheris store.
+The bridge resolves egg IDs directly from the catalog: `minecraft-java`,
+`valheim`, `palworld`, `cs2`, `rust`, etc. map 1:1 to the slugs below.
 
-## Repository layout
-
-```
-eggs/
-  <game>/
-    egg.json          # Pterodactyl PTDL_v2 manifest
-    install.sh        # Idempotent installation script (runs in the install container)
-    README.md         # Game-specific notes, variables, firewall rules
-images/
-  <game>/Dockerfile   # Runtime images published to ghcr.io/aetheris-project/*
-tools/
-  generate_eggs.py    # Declarative generator for SteamCMD and Minecraft eggs
-  validate_eggs.py    # Schema + consistency validator (CI gate)
-docs/
-  egg-authoring.md    # How to add a new egg to this catalog
-```
-
-## Validation
-
-Every egg is validated in CI before merge:
+### Validate the catalog locally
 
 ```bash
 python tools/validate_eggs.py
 ```
 
-The validator checks that each `egg.json`:
+<br>
 
-- is valid JSON with the `PTDL_v2` meta schema;
-- declares a `startup` command, a `stop` command and install scripts;
-- references an image that exists in `images/`;
-- declares variables with defaults, descriptions and validation rules;
-- keeps the same `id` slug across the egg, its folder and its image tag.
+## 🎮 Full Catalog
 
-## Generating eggs
+Click any egg folder in the repo for game-specific variables, firewall notes
+and install-script behavior.
 
-SteamCMD-based and Minecraft-family eggs are generated from a declarative
-catalog in `tools/generate_eggs.py`:
+| Family | Slug | Game | Default Port | Image |
+|---|---|---|---|---|
+| **Minecraft** | `minecraft-java` | Minecraft Java Edition | 25565 | `ghcr.io/aetheris-project/minecraft-java` |
+| | `minecraft-forge` | Minecraft Forge (modded) | 25565 | `ghcr.io/aetheris-project/minecraft-forge` |
+| | `minecraft-paper` | Minecraft Paper (optimized) | 25565 | `ghcr.io/aetheris-project/minecraft-paper` |
+| | `minecraft-velocity` | Minecraft Velocity (proxy) | 25577 | `ghcr.io/aetheris-project/minecraft-velocity` |
+| | `minecraft-bedrock` | Minecraft Bedrock Edition | 19132/udp | `ghcr.io/aetheris-project/minecraft-bedrock` |
+| **Survival / Open-World** | `valheim` | Valheim | 2456/udp | `ghcr.io/aetheris-project/valheim` |
+| | `palworld` | Palworld | 8211/udp | `ghcr.io/aetheris-project/palworld` |
+| | `ark-asa` | ARK: Survival Ascended | 7777/udp | `ghcr.io/aetheris-project/ark-asa` |
+| | `project-zomboid` | Project Zomboid | 16261/udp | `ghcr.io/aetheris-project/project-zomboid` |
+| | `factorio` | Factorio | 34197/udp | `ghcr.io/aetheris-project/factorio` |
+| | `satisfactory` | Satisfactory | 7777/udp | `ghcr.io/aetheris-project/satisfactory` |
+| | `7dtd` | 7 Days to Die | 26900 | `ghcr.io/aetheris-project/7dtd` |
+| | `vrising` | V Rising | 9874/udp | `ghcr.io/aetheris-project/vrising` |
+| | `enshrouded` | Enshrouded | 15636/udp | `ghcr.io/aetheris-project/enshrouded` |
+| | `vintage-story` | Vintage Story | 42420 | `ghcr.io/aetheris-project/vintage-story` |
+| **Source / Valve** | `cs2` | Counter-Strike 2 | 27015 | `ghcr.io/aetheris-project/cs2` |
+| | `rust` | Rust | 28015/udp | `ghcr.io/aetheris-project/rust` |
+| | `gmod` | Garry's Mod | 27015 | `ghcr.io/aetheris-project/gmod` |
+| | `tf2` | Team Fortress 2 | 27015 | `ghcr.io/aetheris-project/tf2` |
+| | `l4d2` | Left 4 Dead 2 | 27015 | `ghcr.io/aetheris-project/l4d2` |
+| **Sandbox / Other** | `terraria` | Terraria | 7777 | `ghcr.io/aetheris-project/terraria` |
+| | `fivem` | FiveM (GTA V) | 30120 | `ghcr.io/aetheris-project/fivem` |
+| | `dst` | Don't Starve Together | 10999/udp | `ghcr.io/aetheris-project/dst` |
+| | `scpsl` | SCP: Secret Laboratory | 7777 | `ghcr.io/aetheris-project/scpsl` |
+| | `conan-exiles` | Conan Exiles | 7777/udp | `ghcr.io/aetheris-project/conan-exiles` |
+| | `space-engineers` | Space Engineers | 27016/udp | `ghcr.io/aetheris-project/space-engineers` |
+| | `starbound` | Starbound | 21025 | `ghcr.io/aetheris-project/starbound` |
+
+<br>
+
+## 🧩 Repository Layout
+
+```text
+aetheris-game-eggs/
+├── eggs/                           # 🍳 One folder per egg slug
+│   ├── <game-slug>/
+│   │   ├── egg.json                # Pterodactyl PTDL_v2 manifest (authoritative)
+│   │   ├── install.sh              # Idempotent install script (runs in Pterodactyl install container)
+│   │   └── README.md               # Game-specific notes · env vars · firewall rules
+│   └── minecraft/
+│       ├── java / forge / paper / velocity / bedrock/   # 5 sub-eggs
+├── images/                         # 🐳 Source Dockerfiles (→ ghcr.io/aetheris-project/*)
+│   └── <slug>/Dockerfile
+├── tools/
+│   ├── generate_eggs.py            # Declarative generator for SteamCMD and Minecraft-family eggs
+│   └── validate_eggs.py            # CI gate — schema, IDs, image pairing, var coverage
+├── docs/
+│   └── egg-authoring.md            # How to add a new egg (template + checklist)
+└── LICENSE.md                      # AGPL-3.0 + egg/additional-permission clause
+```
+
+<br>
+
+## 🧪 CI & Validation
+
+Every egg is gated in `.github/workflows/validate.yml`:
+
+```bash
+python tools/validate_eggs.py
+```
+
+The validator confirms each `egg.json`:
+- Is valid JSON and declares the `PTDL_v2` meta schema
+- Has `startup`, `stop`, install commands and sane defaults
+- References an image whose Dockerfile exists in `images/<slug>/`
+- Declares every install variable with a default, description and validation regex
+- Keeps a stable `id` slug consistent across folder name, image tag and manifest
+
+SteamCMD and Minecraft-family eggs can be regenerated deterministically:
 
 ```bash
 python tools/generate_eggs.py
 ```
 
-The generator writes the `egg.json`, `README.md` and `images/<slug>/Dockerfile`
-for every entry and is deterministic, so the generated files stay in sync with
-the catalog. Hand-tuned eggs (for example `minecraft/java` with its Aikar's
-flags) remain checked in and are not overwritten.
+Hand-tuned eggs (e.g. Minecraft Java with Aikar's JVM flags) are checked in
+directly and never overwritten.
 
-## Contributing
+---
 
-Read [docs/egg-authoring.md](docs/egg-authoring.md) for the full authoring
-guide, then open a pull request. Game-specific runtime quirks are documented
-inside each egg folder.
+<p align="center">
+  <strong>Made with 💚 by <a href="https://github.com/Leo-Galli">Leonardo Galli</a></strong>
+</p>
 
-## License
+<p align="center">
+  <a href="https://github.com/aetheris-project/aetheris-app">App</a>
+  ·
+  <a href="https://github.com/aetheris-project/aetheris-docs">Docs</a>
+  ·
+  <a href="https://github.com/aetheris-project/aetheris-installer">Installer</a>
+  ·
+  <a href="https://discord.gg/6GcfebuT2A">Discord</a>
+  ·
+  <a href="https://paypal.me/LeonardoGalliITA">Donate</a>
+</p>
 
-AGPL-3.0, with an additional permission for the eggs, install scripts and
-images in this repository (see [LICENSE.md](LICENSE.md)). Copyright (C) 2026
-Leonardo Galli (Leo-Galli), Aetheris Project.
+## 📄 License
+
+AGPL-3.0 with an **additional permission** for the eggs, install scripts
+and container images in this repository (they may be compiled into /
+distributed alongside server binaries without triggering the AGPL's
+corresponding-source clause on the game files themselves).
+See [LICENSE.md](LICENSE.md) for the exact wording.
+
+Copyright (C) 2026 Leonardo Galli (Leo-Galli) · Aetheris Project.
